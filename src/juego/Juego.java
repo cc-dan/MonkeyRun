@@ -1,6 +1,8 @@
 package juego;
 
 
+import java.awt.Color;
+
 import entorno.Entorno;
 import entorno.InterfaceJuego;
 
@@ -15,6 +17,7 @@ public class Juego extends InterfaceJuego
 	private Plataforma flotante2;
 	private Plataforma[] plataformas = new Plataforma[8];
 	private int limite;
+	private int vel_juego = 2;
 	
 	// Variables y métodos propios de cada grupo
 	// ...
@@ -49,7 +52,7 @@ public class Juego extends InterfaceJuego
 	 * (ver el enunciado del TP para mayor detalle).
 	 */
 	public void tick()
-	{
+	{	
 		// colisiones jugador
 		// array de todas las plataformas para checkear colision con cada una
 		for (int i = plataformas.length-1; i >= 0; i--) {
@@ -62,13 +65,23 @@ public class Juego extends InterfaceJuego
 					mono.colision = mono.getX()-16 >= plataformas[i].getX()-plataformas[i].getW() && 
 									mono.getX()+16 <= plataformas[i].getX()+plataformas[i].getW() &&
 									mono.getY()+32+mono.get_vel() >= plataformas[i].getY()-plataformas[i].getH()/2 &&
-									mono.get_vel() >= 0;					
+									(mono.get_vel() >= 0 && mono.getY()+32 <= plataformas[i].getY()-plataformas[i].getH()/2);
+									
 					if (mono.colision) {
 						this.limite = i;
 					} else {
 						this.limite = 0;
 					}
-				}						
+				}
+				
+				// Scrolling
+				if (i > 0) {
+					if (plataformas[i].getX()+plataformas[i].getW()/2 < 0) {
+						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2);
+					}
+					
+					plataformas[i].mover(vel_juego);
+				}
 			}
 		}
 		

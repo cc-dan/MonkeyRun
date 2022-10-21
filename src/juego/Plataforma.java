@@ -28,9 +28,12 @@ public class Plataforma {
 	public int getH() {
 		return this.h;
 	}
+	public void setX(int x) {
+		this.x = x;
+	}
 	
-	public void mover() {
-		this.x -= 2;
+	public void mover(int vel) {
+		this.x -= vel;
 	}
 	
 	public void dibujar() {
