@@ -58,14 +58,18 @@ public class Juego extends InterfaceJuego
 		for (int i = plataformas.length-1; i >= 0; i--) {
 			if (plataformas[i] != null) {
 				plataformas[i].dibujar();
-				
+				// Puntos de interés para calcular colisiones
+				int superficie_plataforma = plataformas[i].getY()-plataformas[i].getH()/2;
+				int extremod_plataforma = plataformas[i].getX()+plataformas[i].getW();
+				int extremoi_plataforma = plataformas[i].getX()-plataformas[i].getW();
+;				
 				/* Funciona de forma que la plataforma con la que colisionamos siempre sea la ultima del loop, 
 				para que ninguna otra pueda sobreescribir el valor de mono.colision */
 				if (i >= this.limite) {
-					mono.colision = mono.getX()-16 >= plataformas[i].getX()-plataformas[i].getW() && 
-									mono.getX()+16 <= plataformas[i].getX()+plataformas[i].getW() &&
-									mono.getY()+32+mono.get_vel() >= plataformas[i].getY()-plataformas[i].getH()/2 &&
-									(mono.get_vel() >= 0 && mono.getY()+32 <= plataformas[i].getY()-plataformas[i].getH()/2);
+					mono.colision = mono.getX()-16 >= extremoi_plataforma && 
+									mono.getX()+16 <= extremod_plataforma &&
+									mono.getY()+32+mono.get_vel() >= superficie_plataforma &&
+									(mono.get_vel() >= 0 && mono.getY()+32 <= superficie_plataforma);
 									
 					if (mono.colision) {
 						this.limite = i;
@@ -75,8 +79,8 @@ public class Juego extends InterfaceJuego
 				}
 				
 				// Scrolling
-				if (i > 0) {
-					if (plataformas[i].getX()+plataformas[i].getW()/2 < 0) {
+				if (i > 0) { // No aplica al piso
+					if (extremod_plataforma < 0) {
 						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2);
 					}
 					
