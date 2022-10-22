@@ -1,13 +1,11 @@
 package juego;
 
-import java.awt.Color;
-
 import entorno.Entorno;
 
 public class Mono {
 	private int x, y;
 	private int gravedad = 1;
-	private int vel_salto = 15;
+	private int vel_salto = 17;
 	private int vel_vertical;
 	private Entorno entorno;
 	public boolean colision;
@@ -44,8 +42,8 @@ public class Mono {
 			this.mover(-4);
 		}
 		
-		if (/*this.y < this.entorno.ancho() - 400*/ !this.colision) {
-			if (this.vel_vertical <= 8) {
+		if (!this.colision) {
+			if (this.vel_vertical <= 5) {
 				this.vel_vertical += this.gravedad;
 			}
 		} else {
@@ -54,6 +52,7 @@ public class Mono {
 				this.saltar();
 			}
 		}
+
 		this.y += this.vel_vertical;
 	}
 	

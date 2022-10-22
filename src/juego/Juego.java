@@ -1,8 +1,5 @@
 package juego;
 
-
-import java.awt.Color;
-
 import entorno.Entorno;
 import entorno.InterfaceJuego;
 
@@ -15,9 +12,11 @@ public class Juego extends InterfaceJuego
 	private Plataforma piso;
 	private Plataforma flotante;
 	private Plataforma flotante2;
+	private Plataforma flotante3;
+	private Plataforma flotante4;
 	private Plataforma[] plataformas = new Plataforma[8];
 	private int limite;
-	private int vel_juego = 2;
+	private int vel_juego = 3;
 	
 	// Variables y métodos propios de cada grupo
 	// ...
@@ -25,19 +24,23 @@ public class Juego extends InterfaceJuego
 	Juego()
 	{
 		// Inicializa el objeto entorno
-		this.entorno = new Entorno(this, "Boss Rabbit Rabber - Grupo ... - v1", 800, 600);
+		this.entorno = new Entorno(this, "Boss Rabbit Rabber - Grupo ... - v1", 1024, 480);
 		
 		// Inicializar lo que haga falta para el juego
 		// ...
 		this.mono = new Mono(400, 0, this.entorno);
 		
-		this.piso = new Plataforma(400, this.entorno.alto()+8, 820, 16, this.entorno);
-		this.flotante = new Plataforma(this.entorno.ancho()/3, this.entorno.alto()-64, 64, 16, this.entorno);
-		this.flotante2 = new Plataforma(600, this.entorno.alto()-64, 64, 16, this.entorno);
+		this.piso = new Plataforma(0+this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
+		this.flotante = new Plataforma(0, this.entorno.alto()-64, 64, 16, this.entorno);
+		this.flotante2 = new Plataforma(250, this.entorno.alto()-128, 64, 16, this.entorno);
+		this.flotante3 = new Plataforma(500, this.entorno.alto()-80, 64, 16, this.entorno);
+		this.flotante4 = new Plataforma(650, this.entorno.alto()-70, 64, 16, this.entorno);
 		
 		this.plataformas[0] = this.piso;
 		this.plataformas[1] = this.flotante;
 		this.plataformas[2] = this.flotante2;
+		this.plataformas[3] = this.flotante3;
+		this.plataformas[4] = this.flotante4;
 
 		this.limite = 0;
 		
@@ -69,7 +72,7 @@ public class Juego extends InterfaceJuego
 					mono.colision = mono.getX()-16 >= extremoi_plataforma && 
 									mono.getX()+16 <= extremod_plataforma &&
 									mono.getY()+32+mono.get_vel() >= superficie_plataforma &&
-									(mono.get_vel() >= 0 && mono.getY()+32 <= superficie_plataforma);
+									(mono.get_vel() >= 0 && mono.getY()+32 <= superficie_plataforma); // Si está cayendo, que esté por arriba
 									
 					if (mono.colision) {
 						this.limite = i;
@@ -85,7 +88,12 @@ public class Juego extends InterfaceJuego
 					}
 					
 					plataformas[i].mover(vel_juego);
-				}
+					
+					// Dibujar arboles. Uno por cada dos plataformas
+					if (i % 2 == 0) {
+						this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
+					}
+				}								
 			}
 		}
 		
