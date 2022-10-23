@@ -2,6 +2,7 @@ package juego;
 
 import entorno.Entorno;
 import entorno.InterfaceJuego;
+import java.util.Random;
 
 public class Juego extends InterfaceJuego
 {
@@ -17,6 +18,7 @@ public class Juego extends InterfaceJuego
 	private Plataforma[] plataformas = new Plataforma[8];
 	private int limite;
 	private int vel_juego = 3;
+	private Random rand = new Random();
 	
 	// Variables y métodos propios de cada grupo
 	// ...
@@ -84,9 +86,15 @@ public class Juego extends InterfaceJuego
 				// Scrolling
 				if (i > 0) { // No aplica al piso
 					if (extremod_plataforma < 0) {
+						// Cambio de las posiciones verticales y horizontales
 						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2);
-					}
-					
+						
+						int nuevo_y = (int)(Math.random() * 48 + 24); // Unidades maximas y minimas de movimiento vertical
+						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-64) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
+							nuevo_y = -nuevo_y;
+						} 
+						plataformas[i].setY(plataformas[i].getY() + nuevo_y);
+ 					}
 					plataformas[i].mover(vel_juego);
 					
 					// Dibujar arboles. Uno por cada dos plataformas

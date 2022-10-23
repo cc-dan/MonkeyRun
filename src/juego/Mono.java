@@ -35,7 +35,6 @@ public class Mono {
 	}
 	
 	public void actualizar() {
-		//System.out.println(this.colision);
 		if (this.entorno.estaPresionada(entorno.TECLA_DERECHA)) {
 			this.mover(4);
 		} else if (this.entorno.estaPresionada(entorno.TECLA_IZQUIERDA)){
