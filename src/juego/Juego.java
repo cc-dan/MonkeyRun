@@ -16,6 +16,11 @@ public class Juego extends InterfaceJuego
 	private Plataforma flotante3;
 	private Plataforma flotante4;
 	private Plataforma[] plataformas = new Plataforma[8];
+	private Depredador leon;
+	private Depredador leon2;
+	private Depredador leon3;
+	private Depredador leon4;
+	private Depredador[] depredadores = new Depredador[4];
 	private int limite;
 	private int vel_juego = 3;
 	private Random rand = new Random();
@@ -44,6 +49,15 @@ public class Juego extends InterfaceJuego
 		this.plataformas[3] = this.flotante3;
 		this.plataformas[4] = this.flotante4;
 
+		this.leon = new Depredador(300, 448, entorno);
+		this.leon2 = new Depredador(400, 448, entorno);
+		this.leon3 = new Depredador(580, 448, entorno);
+		this.leon4 = new Depredador(660, 448, entorno);
+		this.depredadores[0] = this.leon;
+		this.depredadores[1] = this.leon2;
+		this.depredadores[2] = this.leon3;
+		this.depredadores[3] = this.leon4;
+		
 		this.limite = 0;
 		
 		// Inicia el juego!
@@ -90,10 +104,24 @@ public class Juego extends InterfaceJuego
 						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2);
 						
 						int nuevo_y = (int)(Math.random() * 48 + 24); // Unidades maximas y minimas de movimiento vertical
+						//System.out.println(nuevo_y);
 						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-64) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
 							nuevo_y = -nuevo_y;
 						} 
 						plataformas[i].setY(plataformas[i].getY() + nuevo_y);
+						
+						// Spawnear depredadores en las plataformas
+						if (plataformas[i].getY() % 5 == 0) {
+							System.out.println("yep");
+							for (int x = depredadores.length-1; x >= 0; x--) {
+								if (depredadores[x] != null) {
+									if (depredadores[x].offscreen) {
+										depredadores[x].reposicionar(plataformas[i].getX(), plataformas[i].getY());
+										break;
+									}
+								}
+							}
+						}
  					}
 					plataformas[i].mover(vel_juego);
 					
@@ -102,6 +130,22 @@ public class Juego extends InterfaceJuego
 						this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
 					}
 				}								
+			}
+		}
+		for (int i = depredadores.length-1; i >= 0; i--) {
+			if (depredadores[i] != null) {
+				int vel_depredador = vel_juego;
+				if (depredadores[i].getY() >= 448) {
+					vel_depredador += 1;
+				}
+				depredadores[i].mover(vel_depredador);
+				
+				if (depredadores[i].getX() < 0) {
+					depredadores[i].reposicionar(1900, 448);
+				}
+				
+				depredadores[i].actualizar();
+				depredadores[i].dibujar();
 			}
 		}
 		

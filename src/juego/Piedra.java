@@ -3,10 +3,10 @@ package juego;
 import entorno.Entorno;
 
 public class Piedra {
-	int x, y;
-	int vel = 10;
-	int vel_actual;
-	Entorno entorno;
+	private int x, y;
+	private int vel = 10;
+	private int vel_actual;
+	private Entorno entorno;
 	
 	public Piedra(int x, int y, Entorno entorno) {
 		this.x = x;
