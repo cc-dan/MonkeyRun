@@ -37,7 +37,6 @@ public class Piedra {
 	
 	public void actualizar() {
 		this.x += vel_actual;
-		this.y += vel_actual;
 	}
 	
 	public void dibujar() {

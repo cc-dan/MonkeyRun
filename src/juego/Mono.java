@@ -4,13 +4,15 @@ import entorno.Entorno;
 
 public class Mono {
 	private int x, y;
+	private int w = 32;
+	private int h = 64;
 	private int gravedad = 1;
 	private int vel_salto = 17;
 	private int vel_vertical;
 	private Entorno entorno;
 	public boolean colision;
 	private Piedra piedra;
-	private Piedra[] piedras;
+	private Timer timer_piedra = new Timer(120);
 	
 	public Mono(int x, int y, Entorno entorno) {
 		this.x = x;
@@ -27,8 +29,14 @@ public class Mono {
 	public int getY() {
 		return this.y;
 	}
+	public int getW() {
+		return this.w;
+	}
+	public int getH() {
+		return this.h;
+	}
 	public int get_vel() {
-		return this.vel_vertical;
+		return this.vel_vertical;	
 	}
 	
 	public void saltar() {
@@ -36,6 +44,12 @@ public class Mono {
 	}
 	public void mover(int spd) {
 		this.x += spd;
+	}
+	
+	public void lanzar_piedra() {
+		this.piedra.setX(this.x);
+		this.piedra.setY(this.y);
+		this.piedra.cambiarEstado();
 	}
 	
 	public void actualizar() {
@@ -59,10 +73,13 @@ public class Mono {
 		
 		// Lanzar piedra
 		if (this.entorno.sePresiono(entorno.TECLA_ESPACIO) && this.piedra.getVel() == 0) {
-			this.piedra.setX(this.x);
-			this.piedra.setY(this.y);
-			this.piedra.cambiarEstado();
+			if (this.timer_piedra.getContador() <= 0) {
+				this.lanzar_piedra();
+				this.timer_piedra.empezar();
+			}
 		}
+		this.timer_piedra.actualizar();
+		
 		// Reposicionar piedra cuando se sale del mapa o choca un enemigo
 		if ((this.piedra.getX() > this.entorno.ancho() || this.piedra.getY() > this.entorno.alto()) && this.piedra.getVel() > 0) {
 			this.piedra.cambiarEstado();
@@ -75,6 +92,6 @@ public class Mono {
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarRectangulo(this.x, this.y, 32, 64, 0, null);
+		this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
 	}
 }
