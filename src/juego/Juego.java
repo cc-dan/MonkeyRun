@@ -3,6 +3,9 @@ package juego;
 import entorno.Entorno;
 import entorno.InterfaceJuego;
 
+import java.awt.Color;
+import java.util.concurrent.TimeUnit;
+
 public class Juego extends InterfaceJuego
 {
 	// El objeto Entorno que controla el tiempo y otros
@@ -23,7 +26,9 @@ public class Juego extends InterfaceJuego
 	private int limite;
 	private int vel_juego = 4;
 	
-	private int nivel_piso = 464;
+	private int nivel_piso = 464-32;
+	
+	private int puntaje = 0;
 	
 	// Variables y métodos propios de cada grupo
 	// ...
@@ -60,8 +65,37 @@ public class Juego extends InterfaceJuego
 		
 		this.limite = 0;
 		
+		Color colorFont = new Color(689);	
+		this.entorno.cambiarFont("ITALIC", 50, colorFont);
+		this.entorno.escribirTexto("Score: " + puntaje, 30, 50);
+		
 		// Inicia el juego!
 		this.entorno.iniciar();
+	}
+	
+	private void pausar() {
+		for (int i = 0; i < this.depredadores.length-1; i++) {
+			this.depredadores[i].set_vel(vel_juego);
+		}
+		this.mono.bloquear_control();
+		vel_juego = 0;
+	}
+	private void resumir() {
+		for (int i = 0; i < this.depredadores.length-1; i++) {
+			this.depredadores[i].resetear(nivel_piso);
+		}
+		this.mono.habilitar_control();
+		vel_juego = 4;
+	}
+	private void reset() {
+		this.pausar();
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			Thread.currentThread().interrupt();
+		}
+		this.resumir();
 	}
 
 	/**
@@ -77,6 +111,11 @@ public class Juego extends InterfaceJuego
 		int mono_izquierda = mono.getX()-mono.getW()/2;
 		int mono_pies = mono.getY()+mono.getH()/2;
 		int mono_cabeza = mono.getY()-mono.getH()/2;
+		
+		int piedra_right = mono.getXpiedra() + mono.getRadioPiedra()/2;
+		int piedra_left = mono.getXpiedra() - mono.getRadioPiedra()/2;
+		int piedra_bottom = mono.getYpiedra() - mono.getRadioPiedra()/2;
+		int piedra_top = mono.getYpiedra() + mono.getRadioPiedra()/2;
 		
 		// colisiones jugador
 		// array de todas las plataformas para checkear colision con cada una
@@ -140,6 +179,26 @@ public class Juego extends InterfaceJuego
 		int ultimo_x = 0;
 		for (int i = depredadores.length-1; i >= 0; i--) {
 			if (depredadores[i] != null) {
+				int depredador_right = depredadores[i].getX() + depredadores[i].getW()/2;
+				int depredador_left = depredadores[i].getX() - depredadores[i].getW()/2;
+				int depredador_top = depredadores[i].getY() + depredadores[i].getH()/2;
+				int depredador_bottom = depredadores[i].getY() + depredadores[i].getH()/2;	
+				
+				//Testing berna
+				//colision Depredador con mono
+				if(depredadores[i].depredador_colision(mono_derecha, mono_izquierda, mono_pies, mono_cabeza)) {
+					System.out.println("******");
+				}
+				
+				//colision Piedra con depredador
+				if(depredador_right >= piedra_right && 
+				   depredador_left <= piedra_left &&
+				   depredador_top >= piedra_top &&
+				   depredador_bottom <= piedra_bottom) {
+					System.out.print("uuuuuuus");
+					this.puntaje = puntaje + 1;
+				}		
+				
 				// Que se queden quietos si están en una plataforma
 				if (depredadores[i].getY() < nivel_piso) {
 					depredadores[i].set_vel(0);
@@ -165,7 +224,7 @@ public class Juego extends InterfaceJuego
 		}
 		
 		if (this.entorno.sePresiono(this.entorno.TECLA_ENTER)) {
-			depredadores[0].huir();
+			this.reset();
 		}
 		
 		// Procesamiento de un instante de tiempo

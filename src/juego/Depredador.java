@@ -64,6 +64,20 @@ public class Depredador {
 		this.vel_actual = vel;
 	}
 	
+	public boolean depredador_colision(int derecha, int izquierda, int pies, int cabeza) {		
+		boolean colision = false;
+		
+		if(this.getX() >= izquierda && 
+		   this.getX() <= derecha && 
+		   this.getY() >= pies && 
+		   this.getY() <= cabeza) {
+		 colision = true;
+		}
+		
+		
+		return colision; 
+	}
+	
 	public void actualizar() {
 		this.offscreen = this.x < 0 || this.x > this.entorno.ancho();
 	}

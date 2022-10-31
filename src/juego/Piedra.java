@@ -4,6 +4,7 @@ import entorno.Entorno;
 
 public class Piedra {
 	private int x, y;
+	private int r = 8;
 	private int vel = 10;
 	private int vel_actual;
 	private Entorno entorno;
@@ -21,6 +22,9 @@ public class Piedra {
 	public int getY() {
 		return this.y;
 	}
+	public int getRadio() {
+		return this.r;
+	}
 	public void setX(int x) {
 		this.x = x;
 	}
@@ -35,11 +39,19 @@ public class Piedra {
 		this.vel_actual = (this.vel_actual - this.vel) * -1;
 	}
 	
+	public boolean piedra_colision(int izq, int der, int hei, int wei) {
+		return izq <= this.x+this.r &&
+			   der >= this.x-this.r &&
+			   hei <= this.y-this.r &&
+			   wei >= this.y+this.r;
+	}
+	
+	
 	public void actualizar() {
 		this.x += vel_actual;
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarCirculo(this.x, this.y, 8, null);
+		this.entorno.dibujarCirculo(this.x, this.y, this.r, null);
 	}
 }

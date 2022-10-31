@@ -13,6 +13,7 @@ public class Mono {
 	public boolean colision;
 	private Piedra piedra;
 	private Timer timer_piedra = new Timer(120);
+	private boolean bloqueado = false;
 	
 	public Mono(int x, int y, Entorno entorno) {
 		this.x = x;
@@ -38,6 +39,15 @@ public class Mono {
 	public int get_vel() {
 		return this.vel_vertical;	
 	}
+	public int getXpiedra() {
+		return this.piedra.getX();
+	}	
+	public int getYpiedra() {
+		return this.piedra.getY();
+	}	
+	public int getRadioPiedra() {
+		return this.piedra.getRadio();
+	}	
 	
 	public void saltar() {
 		this.vel_vertical = -this.vel_salto;
@@ -52,7 +62,22 @@ public class Mono {
 		this.piedra.cambiarEstado();
 	}
 	
+	public boolean get_piedra_colision(int izq, int der, int hei, int wei) {
+		return this.piedra.piedra_colision(izq, der, hei, wei);
+	}
+	
+	public void bloquear_control() {
+		this.bloqueado = true;
+	}
+	public void habilitar_control() {
+		this.bloqueado = false;
+	}
+	
 	public void actualizar() {
+		if (this.bloqueado) {
+			return;
+		}
+		
 		if (this.entorno.estaPresionada(entorno.TECLA_DERECHA)) {
 			this.mover(4);
 		} else if (this.entorno.estaPresionada(entorno.TECLA_IZQUIERDA)){
