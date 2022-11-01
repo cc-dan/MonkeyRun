@@ -40,6 +40,11 @@ public class Depredador {
 	}
 	
 	public void huir() {
+		if (this.y < 464) {
+			this.reposicionar(1900, 464);
+			return;
+		}
+		
 		this.set_vel(6);
 	}
 	

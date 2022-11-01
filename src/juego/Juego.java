@@ -19,6 +19,8 @@ public class Juego extends InterfaceJuego
 	private Plataforma flotante2;
 	private Plataforma flotante3;
 	private Plataforma flotante4;
+	private Plataforma flotante5;
+	private Plataforma flotante6;
 	private Plataforma[] plataformas = new Plataforma[8];
 	private Depredador leon;
 	private Depredador leon2;
@@ -27,6 +29,7 @@ public class Juego extends InterfaceJuego
 	private Depredador[] depredadores = new Depredador[4];
 	private int limite;
 	private int vel_juego = 4;
+	private int ultimo_y;
 	
 	private int nivel_piso = 464;
 	
@@ -50,14 +53,20 @@ public class Juego extends InterfaceJuego
 		this.piso = new Plataforma(0+this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
 		this.flotante = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
 		this.flotante2 = new Plataforma(250, this.entorno.alto()-128, 96, 16, this.entorno);
-		this.flotante3 = new Plataforma(700, this.entorno.alto()-80, 96, 16, this.entorno);
-		this.flotante4 = new Plataforma(900, this.entorno.alto()-70, 96, 16, this.entorno);
+		
+		this.flotante5 = new Plataforma(600, this.entorno.alto()-80, 96, 16, this.entorno);
+		this.flotante6 = new Plataforma(750, this.entorno.alto()-70, 96, 16, this.entorno);
+		
+		this.flotante3 = new Plataforma(900, this.entorno.alto()-80, 96, 16, this.entorno);
+		this.flotante4 = new Plataforma(1100, this.entorno.alto()-70, 96, 16, this.entorno);
 		
 		this.plataformas[0] = this.piso;
 		this.plataformas[1] = this.flotante;
 		this.plataformas[2] = this.flotante2;
 		this.plataformas[3] = this.flotante3;
 		this.plataformas[4] = this.flotante4;
+		this.plataformas[5] = this.flotante5;
+		this.plataformas[6] = this.flotante6;
 
 		this.leon = new Depredador(this.entorno.ancho()+300, nivel_piso, entorno);
 		this.leon2 = new Depredador(this.entorno.ancho()+600, nivel_piso, entorno);
@@ -77,7 +86,7 @@ public class Juego extends InterfaceJuego
 		this.fondo = Herramientas.cargarImagen("fondo.jpg"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "fondo"
 		this.arbol = Herramientas.cargarImagen("arbol.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "arbol"
 		
-		
+		this.ultimo_y = this.mono.getY();
 		
 		// Inicia el juego!
 		this.entorno.iniciar();
@@ -91,7 +100,7 @@ public class Juego extends InterfaceJuego
 		vel_juego = 0;
 	}
 	private void resumir() {
-		for (int i = 0; i < this.depredadores.length-1; i++) {
+		for (int i = 0; i <= this.depredadores.length-1; i++) {
 			this.depredadores[i].resetear(nivel_piso);
 		}
 		this.mono.habilitar_control();
@@ -148,6 +157,15 @@ public class Juego extends InterfaceJuego
 									
 					if (mono.colision) {
 						this.limite = i;
+						
+						// puntaje
+						if (this.mono.getY() < 448) {
+							if (this.mono.getY() != this.ultimo_y) {
+								this.puntaje += 5;
+								System.out.println(puntaje);
+							}
+							this.ultimo_y = this.mono.getY();
+						}
 					} else {
 						this.limite = 0;
 					}
@@ -160,7 +178,7 @@ public class Juego extends InterfaceJuego
 						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
 						
 						int nuevo_y = (int)(Math.random() * 48 + 24); // Unidades maximas y minimas de movimiento vertical
-						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-64) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
+						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
 							nuevo_y = -nuevo_y;
 						} 
 						plataformas[i].setY(plataformas[i].getY() + nuevo_y);
@@ -170,7 +188,7 @@ public class Juego extends InterfaceJuego
 							for (int x = depredadores.length-1; x >= 0; x--) {
 								if (depredadores[x] != null) {
 									if (depredadores[x].offscreen) {
-										depredadores[x].reposicionar(plataformas[i].getX(), plataformas[i].getY());
+										depredadores[x].reposicionar(plataformas[i].getX(), plataformas[i].getY() - 16);
 										break;
 									}
 								}
@@ -208,8 +226,8 @@ public class Juego extends InterfaceJuego
 				if (piedra_right >= depredador_left && 
 					piedra_left <= depredador_right && 
 					piedra_top <= depredador_bottom && 
-					piedra_bottom >= depredador_top) {
-					
+					piedra_bottom >= depredador_top &&
+					(this.mono.get_vel_piedra() > 0)){ 
 					depredadores[i].huir();
 					mono.resetear_piedra();
 				}
@@ -238,9 +256,7 @@ public class Juego extends InterfaceJuego
 			}
 		}
 		
-		if (this.entorno.sePresiono(this.entorno.TECLA_ENTER)) {
-			this.reset();
-		}
+		//System.out.println(this.mono.getY());
 		
 		// Procesamiento de un instante de tiempo
 		// ...

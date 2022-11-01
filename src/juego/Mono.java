@@ -49,6 +49,9 @@ public class Mono {
 	public int get_vel() {
 		return this.vel_vertical;	
 	}
+	public int get_vel_piedra() {
+		return this.piedra.getVel();
+	}
 	public int getXpiedra() {
 		return this.piedra.getX();
 	}	
@@ -75,9 +78,7 @@ public class Mono {
 	public void resetear_piedra() {
 		this.piedra.setX(this.x);
 		this.piedra.setY(this.y);
-		if (this.piedra.getVel() > 0) {
-			this.piedra.cambiarEstado();
-		}
+		this.piedra.setVel(0);
 	}
 	
 	public boolean get_piedra_colision(int izq, int der, int hei, int wei) {

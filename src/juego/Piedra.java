@@ -42,6 +42,9 @@ public class Piedra {
 	public int getVel() {
 		return this.vel_actual;
 	}
+	public void setVel(int vel) {
+		this.vel_actual = vel;
+	}
 	
 	public void cambiarEstado() {
 		this.vel_actual = (this.vel_actual - this.vel) * -1;
