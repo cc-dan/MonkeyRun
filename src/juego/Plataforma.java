@@ -1,10 +1,16 @@
 package juego;
 
+import java.awt.Color;
+import java.awt.Image;
+
 import entorno.Entorno;
+import entorno.Herramientas;
 
 public class Plataforma {
 	private int x, y, w, h;
 	private Entorno entorno;
+	private Image imagen;
+	private Color color;
 	
 	public Plataforma(int x, int y, int w, int h, Entorno entorno) {
 		this.w = w;
@@ -12,6 +18,9 @@ public class Plataforma {
 		this.x = x;
 		this.y = y;
 		this.entorno = entorno;
+		
+		this.imagen = Herramientas.cargarImagen("rama.png");
+		this.color = new Color(205,133,63);
 	}
 	
 	public int getX() {
@@ -38,6 +47,8 @@ public class Plataforma {
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
+		this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, this.color);
+		
+		this.entorno.dibujarImagen(this.imagen, this.x, this.y, 0);
 	}
 }

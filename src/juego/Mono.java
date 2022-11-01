@@ -1,6 +1,9 @@
 package juego;
 
+import java.awt.Image;
+
 import entorno.Entorno;
+import entorno.Herramientas;
 
 public class Mono {
 	private int x, y;
@@ -14,6 +17,9 @@ public class Mono {
 	private Piedra piedra;
 	private Timer timer_piedra = new Timer(120);
 	private boolean bloqueado = false;
+	private Image run;
+	private Image saltando;
+	private Image muerto;
 	
 	public Mono(int x, int y, Entorno entorno) {
 		this.x = x;
@@ -22,6 +28,10 @@ public class Mono {
 		this.colision = false;
 		
 		this.piedra = new Piedra(this.x, this.y, entorno);
+		
+		this.run = Herramientas.cargarImagen("run.png");
+		this.saltando = Herramientas.cargarImagen("saltando.png");
+		this.muerto = Herramientas.cargarImagen("agila.jpg");
 	}
 	
 	public int getX() {
@@ -62,6 +72,14 @@ public class Mono {
 		this.piedra.cambiarEstado();
 	}
 	
+	public void resetear_piedra() {
+		this.piedra.setX(this.x);
+		this.piedra.setY(this.y);
+		if (this.piedra.getVel() > 0) {
+			this.piedra.cambiarEstado();
+		}
+	}
+	
 	public boolean get_piedra_colision(int izq, int der, int hei, int wei) {
 		return this.piedra.piedra_colision(izq, der, hei, wei);
 	}
@@ -76,12 +94,6 @@ public class Mono {
 	public void actualizar() {
 		if (this.bloqueado) {
 			return;
-		}
-		
-		if (this.entorno.estaPresionada(entorno.TECLA_DERECHA)) {
-			this.mover(4);
-		} else if (this.entorno.estaPresionada(entorno.TECLA_IZQUIERDA)){
-			this.mover(-4);
 		}
 		
 		if (!this.colision) {
@@ -117,6 +129,14 @@ public class Mono {
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
+		//this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
+		
+		Image img = this.run;
+		
+		if (this.vel_vertical != 0) {
+			img = this.saltando;
+		}
+		
+		this.entorno.dibujarImagen(img, this.x, this.y, 0);
 	}
 }

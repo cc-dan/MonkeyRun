@@ -1,6 +1,9 @@
 package juego;
 
+import java.awt.Image;
+
 import entorno.Entorno;
+import entorno.Herramientas;
 
 public class Depredador {
 	private int x, y;
@@ -10,12 +13,18 @@ public class Depredador {
 	boolean offscreen;
 	private int vel_inicial = -1;
 	private int vel_actual;
+	private Image img_puma; //VARIABLE QUE VA ALMACENAR LA IMG PARA LOS PUMAS
+	private Image img_serpiente;//VARIABLE QUE VA ALMACENAR LA IMG PARA LAS SERPIENTES
 	
 	public Depredador(int x, int y, Entorno entorno) {
 		this.x = x;
 		this.y = y;
 		this.entorno = entorno;
 		this.vel_actual = vel_inicial;
+		
+		this.img_puma = Herramientas.cargarImagen("puma.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "puma"
+		
+		this.img_serpiente = Herramientas.cargarImagen("serpiente.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "serpiente"
 	}
 	
 	public void reposicionar(int x, int y) {
@@ -69,11 +78,10 @@ public class Depredador {
 		
 		if(this.getX() >= izquierda && 
 		   this.getX() <= derecha && 
-		   this.getY() >= pies && 
-		   this.getY() <= cabeza) {
+		   this.getY() >= cabeza && 
+		   this.getY() <= pies) {
 		 colision = true;
-		}
-		
+		}		
 		
 		return colision; 
 	}
@@ -83,6 +91,13 @@ public class Depredador {
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
+		Image img = this.img_puma;
+		
+		if (this.y < 464) {
+			img = this.img_serpiente;
+		}
+		
+		//this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
+		this.entorno.dibujarImagen(img, this.x, this.y, 0);
 	}
 }

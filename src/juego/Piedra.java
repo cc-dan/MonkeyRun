@@ -1,6 +1,10 @@
 package juego;
 
+import java.awt.Color;
+import java.awt.Image;
+
 import entorno.Entorno;
+import entorno.Herramientas;
 
 public class Piedra {
 	private int x, y;
@@ -8,12 +12,16 @@ public class Piedra {
 	private int vel = 10;
 	private int vel_actual;
 	private Entorno entorno;
+	private Color c=new Color(0f,0f,0f,0f);
+	private Image imagen;
 	
 	public Piedra(int x, int y, Entorno entorno) {
 		this.x = x;
 		this.y = y;
 		this.entorno = entorno;
 		this.vel_actual = 0;
+		
+		this.imagen = Herramientas.cargarImagen("piedra.png");
 	}
 	
 	public int getX() {
@@ -52,6 +60,7 @@ public class Piedra {
 	}
 	
 	public void dibujar() {
-		this.entorno.dibujarCirculo(this.x, this.y, this.r, null);
+		this.entorno.dibujarCirculo(this.x, this.y, this.r, c);
+		this.entorno.dibujarImagen(this.imagen, getX(), getY(), 0);
 	}
 }

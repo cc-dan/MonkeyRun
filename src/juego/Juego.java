@@ -1,9 +1,11 @@
 package juego;
 
 import entorno.Entorno;
+import entorno.Herramientas;
 import entorno.InterfaceJuego;
 
 import java.awt.Color;
+import java.awt.Image;
 import java.util.concurrent.TimeUnit;
 
 public class Juego extends InterfaceJuego
@@ -26,9 +28,12 @@ public class Juego extends InterfaceJuego
 	private int limite;
 	private int vel_juego = 4;
 	
-	private int nivel_piso = 464-32;
+	private int nivel_piso = 464;
 	
 	private int puntaje = 0;
+	
+	private Image fondo; //VARIABLE QUE VA ALMACENAR LA IMG PARA EL FONDO
+	private Image arbol;
 	
 	// Variables y métodos propios de cada grupo
 	// ...
@@ -40,13 +45,13 @@ public class Juego extends InterfaceJuego
 		
 		// Inicializar lo que haga falta para el juego
 		// ...
-		this.mono = new Mono(400, 0, this.entorno);
+		this.mono = new Mono(64, nivel_piso-32, this.entorno);
 		
 		this.piso = new Plataforma(0+this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
 		this.flotante = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
 		this.flotante2 = new Plataforma(250, this.entorno.alto()-128, 96, 16, this.entorno);
-		this.flotante3 = new Plataforma(500, this.entorno.alto()-80, 96, 16, this.entorno);
-		this.flotante4 = new Plataforma(650, this.entorno.alto()-70, 96, 16, this.entorno);
+		this.flotante3 = new Plataforma(700, this.entorno.alto()-80, 96, 16, this.entorno);
+		this.flotante4 = new Plataforma(900, this.entorno.alto()-70, 96, 16, this.entorno);
 		
 		this.plataformas[0] = this.piso;
 		this.plataformas[1] = this.flotante;
@@ -68,6 +73,11 @@ public class Juego extends InterfaceJuego
 		Color colorFont = new Color(689);	
 		this.entorno.cambiarFont("ITALIC", 50, colorFont);
 		this.entorno.escribirTexto("Score: " + puntaje, 30, 50);
+		
+		this.fondo = Herramientas.cargarImagen("fondo.jpg"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "fondo"
+		this.arbol = Herramientas.cargarImagen("arbol.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "arbol"
+		
+		
 		
 		// Inicia el juego!
 		this.entorno.iniciar();
@@ -106,6 +116,8 @@ public class Juego extends InterfaceJuego
 	 */
 	public void tick()
 	{	
+		entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto() / 2 , 0);
+		
 		// puntos para calcular colision con el mono, para usar con las plataformas y enemigos
 		int mono_derecha = mono.getX()+mono.getW()/2;
 		int mono_izquierda = mono.getX()-mono.getW()/2;
@@ -114,8 +126,8 @@ public class Juego extends InterfaceJuego
 		
 		int piedra_right = mono.getXpiedra() + mono.getRadioPiedra()/2;
 		int piedra_left = mono.getXpiedra() - mono.getRadioPiedra()/2;
-		int piedra_bottom = mono.getYpiedra() - mono.getRadioPiedra()/2;
-		int piedra_top = mono.getYpiedra() + mono.getRadioPiedra()/2;
+		int piedra_bottom = mono.getYpiedra() + mono.getRadioPiedra()/2;
+		int piedra_top = mono.getYpiedra() - mono.getRadioPiedra()/2;
 		
 		// colisiones jugador
 		// array de todas las plataformas para checkear colision con cada una
@@ -145,7 +157,7 @@ public class Juego extends InterfaceJuego
 				if (i > 0) { // No aplica al piso
 					if (extremod_plataforma < 0) {
 						// Cambio de las posiciones verticales y horizontales
-						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2);
+						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
 						
 						int nuevo_y = (int)(Math.random() * 48 + 24); // Unidades maximas y minimas de movimiento vertical
 						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-64) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
@@ -170,6 +182,7 @@ public class Juego extends InterfaceJuego
 					// Dibujar arboles. Uno por cada dos plataformas
 					if (i % 2 == 0) {
 						this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
+						this.entorno.dibujarImagen(arbol, plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
 					}
 				}	
 				plataformas[i].dibujar();
@@ -181,23 +194,25 @@ public class Juego extends InterfaceJuego
 			if (depredadores[i] != null) {
 				int depredador_right = depredadores[i].getX() + depredadores[i].getW()/2;
 				int depredador_left = depredadores[i].getX() - depredadores[i].getW()/2;
-				int depredador_top = depredadores[i].getY() + depredadores[i].getH()/2;
+				int depredador_top = depredadores[i].getY() - depredadores[i].getH()/2;
 				int depredador_bottom = depredadores[i].getY() + depredadores[i].getH()/2;	
 				
 				//Testing berna
 				//colision Depredador con mono
 				if(depredadores[i].depredador_colision(mono_derecha, mono_izquierda, mono_pies, mono_cabeza)) {
 					System.out.println("******");
+					this.reset();
 				}
 				
 				//colision Piedra con depredador
-				if(depredador_right >= piedra_right && 
-				   depredador_left <= piedra_left &&
-				   depredador_top >= piedra_top &&
-				   depredador_bottom <= piedra_bottom) {
-					System.out.print("uuuuuuus");
-					this.puntaje = puntaje + 1;
-				}		
+				if (piedra_right >= depredador_left && 
+					piedra_left <= depredador_right && 
+					piedra_top <= depredador_bottom && 
+					piedra_bottom >= depredador_top) {
+					
+					depredadores[i].huir();
+					mono.resetear_piedra();
+				}
 				
 				// Que se queden quietos si están en una plataforma
 				if (depredadores[i].getY() < nivel_piso) {
