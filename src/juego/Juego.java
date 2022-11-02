@@ -16,18 +16,7 @@ public class Juego extends InterfaceJuego
 	private Entorno entorno;
 	
 	private Mono mono;
-	private Plataforma piso;
-	private Plataforma flotante;
-	private Plataforma flotante2;
-	private Plataforma flotante3;
-	private Plataforma flotante4;
-	private Plataforma flotante5;
-	private Plataforma flotante6;
 	private Plataforma[] plataformas = new Plataforma[8];
-	private Depredador leon;
-	private Depredador leon2;
-	private Depredador leon3;
-	private Depredador leon4;
 	private Depredador[] depredadores = new Depredador[4];
 	private int limite;
 	private int vel_juego = 4;
@@ -52,32 +41,18 @@ public class Juego extends InterfaceJuego
 		// ...
 		this.mono = new Mono(64, nivel_piso-32, this.entorno);
 		
-		this.piso = new Plataforma(0+this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
-		this.flotante = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
-		this.flotante2 = new Plataforma(250, this.entorno.alto()-128, 96, 16, this.entorno);
-		
-		this.flotante5 = new Plataforma(600, this.entorno.alto()-80, 96, 16, this.entorno);
-		this.flotante6 = new Plataforma(750, this.entorno.alto()-70, 96, 16, this.entorno);
-		
-		this.flotante3 = new Plataforma(900, this.entorno.alto()-80, 96, 16, this.entorno);
-		this.flotante4 = new Plataforma(1100, this.entorno.alto()-70, 96, 16, this.entorno);
-		
-		this.plataformas[0] = this.piso;
-		this.plataformas[1] = this.flotante;
-		this.plataformas[2] = this.flotante2;
-		this.plataformas[3] = this.flotante3;
-		this.plataformas[4] = this.flotante4;
-		this.plataformas[5] = this.flotante5;
-		this.plataformas[6] = this.flotante6;
+		this.plataformas[0] = new Plataforma(0+this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
+		this.plataformas[1] = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
+		this.plataformas[2] = new Plataforma(250, this.entorno.alto()-128, 96, 16, this.entorno);
+		this.plataformas[3] = new Plataforma(900, this.entorno.alto()-80, 96, 16, this.entorno);
+		this.plataformas[4] = new Plataforma(1100, this.entorno.alto()-70, 96, 16, this.entorno);
+		this.plataformas[5] = new Plataforma(600, this.entorno.alto()-80, 96, 16, this.entorno);
+		this.plataformas[6] = new Plataforma(750, this.entorno.alto()-70, 96, 16, this.entorno);
 
-		this.leon = new Depredador(this.entorno.ancho()+300, nivel_piso, entorno);
-		this.leon2 = new Depredador(this.entorno.ancho()+600, nivel_piso, entorno);
-		this.leon3 = new Depredador(this.entorno.ancho()+780, nivel_piso, entorno);
-		this.leon4 = new Depredador(this.entorno.ancho()+1000, nivel_piso, entorno);
-		this.depredadores[0] = this.leon;
-		this.depredadores[1] = this.leon2;
-		this.depredadores[2] = this.leon3;
-		this.depredadores[3] = this.leon4;
+		this.depredadores[0] = new Depredador(this.entorno.ancho()+300, nivel_piso, entorno);
+		this.depredadores[1] = new Depredador(this.entorno.ancho()+600, nivel_piso, entorno);
+		this.depredadores[2] = new Depredador(this.entorno.ancho()+780, nivel_piso, entorno);
+		this.depredadores[3] = new Depredador(this.entorno.ancho()+1000, nivel_piso, entorno);
 		
 		this.limite = 0;
 		
