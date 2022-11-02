@@ -16,7 +16,8 @@ public class Juego extends InterfaceJuego
 	private Entorno entorno;
 	
 	private Mono mono;
-	private Plataforma[] plataformas = new Plataforma[8];
+	private Piedra piedra;
+	private Plataforma[] plataformas = new Plataforma[7];
 	private Depredador[] depredadores = new Depredador[4];
 	private int limite;
 	private int vel_juego = 4;
@@ -93,6 +94,48 @@ public class Juego extends InterfaceJuego
 		}
 		this.resumir();
 	}
+	
+	private boolean colision(Mono mono, Plataforma plataforma) {
+		// Colisión con plataformas; de un solo sentido
+		
+		int mono_derecha 	= mono.getX()+mono.getW()/2;
+		int mono_izquierda 	= mono.getX()-mono.getW()/2;
+		int mono_pies 		= mono.getY()+mono.getH()/2;
+		
+		int plataforma_derecha 	= plataforma.getX()+plataforma.getW();
+		int plataforma_izquierda= plataforma.getX()-plataforma.getW();
+		int plataforma_cabeza 	= plataforma.getY()-plataforma.getH()/2;
+				
+		return 	mono_izquierda 			>= plataforma_izquierda && 
+				mono_derecha 			<= plataforma_derecha 	&&
+				mono_pies+mono.get_vel()>= plataforma_cabeza 	&&
+				(mono.get_vel() >= 0 && mono.getY()+32 <= plataforma_cabeza); // Si está cayendo, que esté por arriba
+				//TODO: revisar getY
+	}
+	private boolean colision(Mono mono, Depredador depredador) {
+		// Colisión con depredadores; márgen reducido
+		
+		int mono_derecha 	= mono.getX()+mono.getW()/2;
+		int mono_izquierda 	= mono.getX()-mono.getW()/2;
+		int mono_pies 		= mono.getY()+mono.getH()/2;
+		int mono_cabeza 	= mono.getY()-mono.getH()/2;
+
+		return 	(depredador.getX() >= mono_izquierda) 	&& 
+				(depredador.getX() <= mono_derecha) 	&& 
+				(depredador.getY() >= mono_cabeza) 		&& 
+				(depredador.getY() <= mono_pies);
+	}
+	private boolean colision(Depredador depredador, Piedra piedra) {
+		int depredador_derecha 	= depredador.getX()+depredador.getW()/2;
+		int depredador_izquierda= depredador.getX()-depredador.getW()/2;
+		int depredador_cabeza 	= depredador.getY()-depredador.getH()/2;
+		int depredador_pies 	= depredador.getY()+depredador.getH()/2;
+		
+		return 	(piedra.getX() >= depredador_izquierda) && 
+				(piedra.getX() <= depredador_derecha) 	&& 
+				(piedra.getY() >= depredador_cabeza) 	&& 
+				(piedra.getY() <= depredador_pies);
+	}
 
 	/**
 	 * Durante el juego, el método tick() será ejecutado en cada instante y 
@@ -104,133 +147,113 @@ public class Juego extends InterfaceJuego
 	{	
 		entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto() / 2 , 0);
 		
-		// puntos para calcular colision con el mono, para usar con las plataformas y enemigos
-		int mono_derecha = mono.getX()+mono.getW()/2;
-		int mono_izquierda = mono.getX()-mono.getW()/2;
-		int mono_pies = mono.getY()+mono.getH()/2;
-		int mono_cabeza = mono.getY()-mono.getH()/2;
+		// LANZAR PIEDRAS
+		if (this.piedra == null) {
+			if (this.entorno.sePresiono(entorno.TECLA_ALT)) {
+				this.piedra = mono.lanzar_piedra_2();
+			}
+		} else {
+			this.piedra.actualizar();
+			this.piedra.dibujar(entorno);
+			
+			if (this.piedra.getX() > this.entorno.ancho()) {
+				this.piedra = null;
+			}
+		}
 		
-		int piedra_right = mono.getXpiedra() + mono.getRadioPiedra()/2;
-		int piedra_left = mono.getXpiedra() - mono.getRadioPiedra()/2;
-		int piedra_bottom = mono.getYpiedra() + mono.getRadioPiedra()/2;
-		int piedra_top = mono.getYpiedra() - mono.getRadioPiedra()/2;
-		
-		// colisiones jugador
-		// array de todas las plataformas para checkear colision con cada una
+		// Plataformas: movimiento, colision y dibujo
 		for (int i = plataformas.length-1; i >= 0; i--) {
-			if (plataformas[i] != null) {
-				// Puntos de interés para calcular colisiones
-				int superficie_plataforma = plataformas[i].getY()-plataformas[i].getH()/2;
-				int extremod_plataforma = plataformas[i].getX()+plataformas[i].getW();
-				int extremoi_plataforma = plataformas[i].getX()-plataformas[i].getW();
-;				
-				/* Funciona de forma que la plataforma con la que colisionamos siempre sea la ultima del loop, 
-				para que ninguna otra pueda sobreescribir el valor de mono.colision */
-				if (i >= this.limite) {
-					mono.colision = mono_izquierda >= extremoi_plataforma && 
-									mono_derecha <= extremod_plataforma &&
-									mono_pies+mono.get_vel() >= superficie_plataforma &&
-									(mono.get_vel() >= 0 && mono.getY()+32 <= superficie_plataforma); // Si está cayendo, que esté por arriba
-									
-					if (mono.colision) {
-						this.limite = i;
-						
-						// puntaje
-						if (this.mono.getY() < 448) {
-							if (this.mono.getY() != this.ultimo_y) {
-								this.puntaje += 5;
-								System.out.println(puntaje);
-							}
-							this.ultimo_y = this.mono.getY();
+			// Puntos de interés para calcular colisiones
+			int extremod_plataforma = plataformas[i].getX()+plataformas[i].getW();
+
+			/* Funciona de forma que la plataforma con la que colisionamos siempre sea la ultima del loop, 
+			para que ninguna otra pueda sobreescribir el valor de mono.colision */
+			if (i >= this.limite) {			
+				if (colision(mono, plataformas[i])) {
+					this.limite = i;
+					mono.colision = true;
+					
+					// puntaje
+					if (this.mono.getY() < 448) {
+						if (this.mono.getY() != this.ultimo_y) {
+							this.puntaje += 5;
+							System.out.println(puntaje);
 						}
-					} else {
-						this.limite = 0;
+						this.ultimo_y = this.mono.getY();
+					}
+				} else {
+					this.limite = 0;
+					mono.colision = false;
+				}
+			}
+			
+			if (i > 0) {
+				// MOVER PLATAFORMAS
+				if (extremod_plataforma < 0) {
+					plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
+					
+					int nuevo_y = (int)(Math.random() * 48 + 24); 					// Unidades maximas y minimas de movimiento vertical
+					if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Límite de altura para las plataformas
+						nuevo_y = -nuevo_y;
+					} 
+					plataformas[i].setY(plataformas[i].getY() + nuevo_y);
+					
+					// SUBIR DEPREDADORES A LAS PLATAFORMAS
+					if (plataformas[i].getY() % 5 == 0) {
+						for (int x = depredadores.length-1; x >= 0; x--) {
+							if (depredadores[x].offscreen) {
+								depredadores[x].reposicionar(plataformas[i].getX(), plataformas[i].getY() - 16);
+								break; // Tomamos uno solo
+							}
+						}
 					}
 				}
+				plataformas[i].mover(vel_juego);
 				
-				// Scrolling
-				if (i > 0) { // No aplica al piso
-					if (extremod_plataforma < 0) {
-						// Cambio de las posiciones verticales y horizontales
-						plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
-						
-						int nuevo_y = (int)(Math.random() * 48 + 24); // Unidades maximas y minimas de movimiento vertical
-						if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Limite de altura. Max altura = (entorno-64 - maximo movimiento vertical) 
-							nuevo_y = -nuevo_y;
-						} 
-						plataformas[i].setY(plataformas[i].getY() + nuevo_y);
-						
-						// Spawnear depredadores en las plataformas. Para que no ocurra tan comunmente, solo ocurre cuando la coordenada Y de la plataforma es divisible por 5
-						if (plataformas[i].getY() % 5 == 0) {
-							for (int x = depredadores.length-1; x >= 0; x--) {
-								if (depredadores[x] != null) {
-									if (depredadores[x].offscreen) {
-										depredadores[x].reposicionar(plataformas[i].getX(), plataformas[i].getY() - 16);
-										break;
-									}
-								}
-							}
-						}
- 					}
-					plataformas[i].mover(vel_juego);
-					
-					// Dibujar arboles. Uno por cada dos plataformas
-					if (i % 2 == 0) {
-						this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
-						this.entorno.dibujarImagen(arbol, plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
-					}
-				}	
-				plataformas[i].dibujar();
-			}
+				// DIBUJAR ARBOLES 
+				if (i % 2 == 0) { // Cada uno tiene dos plataformas
+					this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
+					this.entorno.dibujarImagen(arbol, plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
+				}
+			}	
+			plataformas[i].dibujar();
 		}
 		// Mover los depredadores
 		int ultimo_x = 0;
 		for (int i = depredadores.length-1; i >= 0; i--) {
-			if (depredadores[i] != null) {
-				int depredador_right = depredadores[i].getX() + depredadores[i].getW()/2;
-				int depredador_left = depredadores[i].getX() - depredadores[i].getW()/2;
-				int depredador_top = depredadores[i].getY() - depredadores[i].getH()/2;
-				int depredador_bottom = depredadores[i].getY() + depredadores[i].getH()/2;	
-				
-				//Testing berna
-				//colision Depredador con mono
-				if(depredadores[i].depredador_colision(mono_derecha, mono_izquierda, mono_pies, mono_cabeza)) {
-					System.out.println("******");
-					this.reset();
-				}
-				
-				//colision Piedra con depredador
-				if (piedra_right >= depredador_left && 
-					piedra_left <= depredador_right && 
-					piedra_top <= depredador_bottom && 
-					piedra_bottom >= depredador_top &&
-					(this.mono.get_vel_piedra() > 0)){ 
-					depredadores[i].huir();
-					mono.resetear_piedra();
-				}
-				
-				// Que se queden quietos si están en una plataforma
-				if (depredadores[i].getY() < nivel_piso) {
-					depredadores[i].set_vel(0);
-				}
-				if (!(vel_juego == 0)) {
-					depredadores[i].mover(vel_juego);
-				}
-				
-				// Reposicionar cuando se escapen
-				if (depredadores[i].getX() < 0 || (depredadores[i].offscreen && depredadores[i].get_vel() > 0)) {
-					depredadores[i].resetear(nivel_piso);
-					
-					// Asegurarse de que no se sobrepongan
-					if (Math.abs(ultimo_x - depredadores[i].getX()) <= depredadores[i].getW()*2 && depredadores[i].getY() == nivel_piso) {
-						depredadores[i].reposicionar(depredadores[i].getX()+depredadores[i].getW()*2, depredadores[i].getY());
-					}
-				}
-				ultimo_x = depredadores[i].getX();
-				
-				depredadores[i].actualizar();
-				depredadores[i].dibujar();
+			if(colision(mono, depredadores[i])) {
+				System.out.println("******");
+				this.reset();
 			}
+			
+			if (this.piedra != null) {
+				if (colision(depredadores[i], piedra) ) {
+					this.piedra = null;
+					depredadores[i].huir();
+				}
+			}				
+			
+			// Que se queden quietos si están en una plataforma
+			if (depredadores[i].getY() < nivel_piso) {
+				depredadores[i].set_vel(0);
+			}
+			if (!(vel_juego == 0)) {
+				depredadores[i].mover(vel_juego);
+			}
+			
+			// Reposicionar cuando se escapen
+			if (depredadores[i].getX() < 0 || (depredadores[i].offscreen && depredadores[i].get_vel() > 0)) {
+				depredadores[i].resetear(nivel_piso);
+				
+				// Asegurarse de que no se sobrepongan
+				if (Math.abs(ultimo_x - depredadores[i].getX()) <= depredadores[i].getW()*2 && depredadores[i].getY() == nivel_piso) {
+					depredadores[i].reposicionar(depredadores[i].getX()+depredadores[i].getW()*2, depredadores[i].getY());
+				}
+			}
+			ultimo_x = depredadores[i].getX();
+			
+			depredadores[i].actualizar();
+			depredadores[i].dibujar();
 		}
 		
 		//System.out.println(this.mono.getY());

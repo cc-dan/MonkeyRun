@@ -49,6 +49,9 @@ public class Mono {
 	public int get_vel() {
 		return this.vel_vertical;	
 	}
+	public void set_vel(int vel) {
+		this.vel_vertical = vel;
+	}
 	public int get_vel_piedra() {
 		return this.piedra.getVel();
 	}
@@ -73,6 +76,10 @@ public class Mono {
 		this.piedra.setX(this.x);
 		this.piedra.setY(this.y);
 		this.piedra.cambiarEstado();
+	}
+	
+	public Piedra lanzar_piedra_2() {
+		return new Piedra(this.x, this.y);
 	}
 	
 	public void resetear_piedra() {

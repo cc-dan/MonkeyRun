@@ -24,6 +24,14 @@ public class Piedra {
 		this.imagen = Herramientas.cargarImagen("piedra.png");
 	}
 	
+	public Piedra(int x, int y) {
+		this.x = x;
+		this.y = y;
+		this.vel_actual = 0;
+		
+		this.imagen = Herramientas.cargarImagen("piedra.png");
+	}
+	
 	public int getX() {
 		return this.x;
 	}
@@ -59,11 +67,15 @@ public class Piedra {
 	
 	
 	public void actualizar() {
-		this.x += vel_actual;
+		this.x += vel;
 	}
 	
 	public void dibujar() {
 		this.entorno.dibujarCirculo(this.x, this.y, this.r, c);
 		this.entorno.dibujarImagen(this.imagen, getX(), getY(), 0);
+	}
+	public void dibujar(Entorno entorno) {
+		entorno.dibujarCirculo(this.x, this.y, this.r, c);
+		entorno.dibujarImagen(this.imagen, getX(), getY(), 0);
 	}
 }
