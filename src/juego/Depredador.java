@@ -9,18 +9,27 @@ public class Depredador {
 	private int x, y;
 	private int w = 32;
 	private int h = 32;
-	private Entorno entorno;
 	boolean offscreen;
-	private int vel_inicial = -1;
+	private int velocidad = 6;
 	private int vel_actual;
 	private Image img_puma; //VARIABLE QUE VA ALMACENAR LA IMG PARA LOS PUMAS
 	private Image img_serpiente;//VARIABLE QUE VA ALMACENAR LA IMG PARA LAS SERPIENTES
+	private int direccion = -1;
 	
 	public Depredador(int x, int y, Entorno entorno) {
 		this.x = x;
 		this.y = y;
-		this.entorno = entorno;
-		this.vel_actual = vel_inicial;
+		this.vel_actual = velocidad;
+		
+		this.img_puma = Herramientas.cargarImagen("puma.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "puma"
+		
+		this.img_serpiente = Herramientas.cargarImagen("serpiente.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "serpiente"
+	}
+	// NUEVO CONSTRUCTOR
+	public Depredador(int x, int y) {
+		this.x = x;
+		this.y = y;
+		this.vel_actual = velocidad;
 		
 		this.img_puma = Herramientas.cargarImagen("puma.png"); //CARGAMOS EL ARCHIVO EN LA VARIABLE "puma"
 		
@@ -32,10 +41,17 @@ public class Depredador {
 		this.y = y;
 	}
 	
+	public void setX(int x) {
+		this.x = x;
+	}
+	public void setY(int y) {
+		this.y = y;
+	}
+	
 	public void resetear(int y) {
 		int diferencia = (int)(Math.random() * 256 + 64);
 		
-		this.vel_actual = this.vel_inicial;
+		this.vel_actual = this.velocidad;
 		this.reposicionar(1900 + diferencia, y);
 	}
 	
@@ -58,6 +74,16 @@ public class Depredador {
 	public void mover(int mod) {
 		this.x += this.vel_actual - mod;
 	}
+	public void mover2() {
+		this.x += this.vel_actual * direccion;
+	}
+	public void huir2() {
+		this.cambiar_direccion();
+		this.set_vel(vel_actual * 2);
+	}
+	public void cambiar_direccion() {
+		this.direccion *= -1;
+	}
 	
 	public int getX() {
 		return this.x;
@@ -78,24 +104,11 @@ public class Depredador {
 		this.vel_actual = vel;
 	}
 	
-	public boolean depredador_colision(int derecha, int izquierda, int pies, int cabeza) {		
-		boolean colision = false;
-		
-		if(this.getX() >= izquierda && 
-		   this.getX() <= derecha && 
-		   this.getY() >= cabeza && 
-		   this.getY() <= pies) {
-		 colision = true;
-		}		
-		
-		return colision; 
-	}
-	
 	public void actualizar() {
-		this.offscreen = this.x < 0 || this.x > this.entorno.ancho();
+		//this.offscreen = this.x < 0 || this.x > this.entorno.ancho();
 	}
 	
-	public void dibujar() {
+	public void dibujar(Entorno entorno) {
 		Image img = this.img_puma;
 		
 		if (this.y < 464) {
@@ -103,6 +116,6 @@ public class Depredador {
 		}
 		
 		//this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
-		this.entorno.dibujarImagen(img, this.x, this.y, 0);
+		entorno.dibujarImagen(img, this.x, this.y, 0);
 	}
 }

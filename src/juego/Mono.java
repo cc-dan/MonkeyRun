@@ -14,24 +14,19 @@ public class Mono {
 	private int vel_vertical;
 	private Entorno entorno;
 	public boolean colision;
-	private Piedra piedra;
-	private Timer timer_piedra = new Timer(120);
 	private boolean bloqueado = false;
-	private Image run;
-	private Image saltando;
-	private Image muerto;
+	private Image img_corriendo;
+	private Image img_saltando;
+	private Image img_actual;
 	
 	public Mono(int x, int y, Entorno entorno) {
 		this.x = x;
 		this.y = y;
 		this.entorno = entorno;
-		this.colision = false;
+		this.colision = false;		
 		
-		this.piedra = new Piedra(this.x, this.y, entorno);
-		
-		this.run = Herramientas.cargarImagen("run.png");
-		this.saltando = Herramientas.cargarImagen("saltando.png");
-		this.muerto = Herramientas.cargarImagen("agila.jpg");
+		this.img_corriendo = Herramientas.cargarImagen("run.png");
+		this.img_saltando = Herramientas.cargarImagen("saltando.png");
 	}
 	
 	public int getX() {
@@ -52,18 +47,6 @@ public class Mono {
 	public void set_vel(int vel) {
 		this.vel_vertical = vel;
 	}
-	public int get_vel_piedra() {
-		return this.piedra.getVel();
-	}
-	public int getXpiedra() {
-		return this.piedra.getX();
-	}	
-	public int getYpiedra() {
-		return this.piedra.getY();
-	}	
-	public int getRadioPiedra() {
-		return this.piedra.getRadio();
-	}	
 	
 	public void saltar() {
 		this.vel_vertical = -this.vel_salto;
@@ -72,24 +55,8 @@ public class Mono {
 		this.x += spd;
 	}
 	
-	public void lanzar_piedra() {
-		this.piedra.setX(this.x);
-		this.piedra.setY(this.y);
-		this.piedra.cambiarEstado();
-	}
-	
-	public Piedra lanzar_piedra_2() {
+	public Piedra lanzar_piedra() {
 		return new Piedra(this.x, this.y);
-	}
-	
-	public void resetear_piedra() {
-		this.piedra.setX(this.x);
-		this.piedra.setY(this.y);
-		this.piedra.setVel(0);
-	}
-	
-	public boolean get_piedra_colision(int izq, int der, int hei, int wei) {
-		return this.piedra.piedra_colision(izq, der, hei, wei);
 	}
 	
 	public void bloquear_control() {
@@ -115,36 +82,15 @@ public class Mono {
 			}
 		}
 		this.y += this.vel_vertical;
-		
-		// Lanzar piedra
-		if (this.entorno.sePresiono(entorno.TECLA_ESPACIO) && this.piedra.getVel() == 0) {
-			if (this.timer_piedra.getContador() <= 0) {
-				this.lanzar_piedra();
-				this.timer_piedra.empezar();
-			}
-		}
-		this.timer_piedra.actualizar();
-		
-		// Reposicionar piedra cuando se sale del mapa o choca un enemigo
-		if ((this.piedra.getX() > this.entorno.ancho() || this.piedra.getY() > this.entorno.alto()) && this.piedra.getVel() > 0) {
-			this.piedra.cambiarEstado();
-		}
-		
-		if (this.piedra.getVel() > 0) {
-			this.piedra.dibujar();
-		}
-		this.piedra.actualizar();
 	}
 	
-	public void dibujar() {
-		//this.entorno.dibujarRectangulo(this.x, this.y, this.w, this.h, 0, null);
-		
-		Image img = this.run;
-		
+	public void dibujar() {		
 		if (this.vel_vertical != 0) {
-			img = this.saltando;
+			this.img_actual = this.img_saltando;
+		} else {
+			this.img_actual = this.img_corriendo;
 		}
 		
-		this.entorno.dibujarImagen(img, this.x, this.y, 0);
+		this.entorno.dibujarImagen(this.img_actual, this.x, this.y, 0);
 	}
 }
