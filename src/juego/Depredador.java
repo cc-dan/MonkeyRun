@@ -69,12 +69,6 @@ public class Depredador {
 	}
 	
 	public void mover() {
-		this.mover(0);
-	}
-	public void mover(int mod) {
-		this.x += this.vel_actual - mod;
-	}
-	public void mover2() {
 		this.x += this.vel_actual * direccion;
 	}
 	public void huir2() {
@@ -100,12 +94,11 @@ public class Depredador {
 	public int get_vel() {
 		return this.vel_actual;
 	}
+	public int get_direccion() {
+		return this.direccion;
+	}
 	public void set_vel(int vel) {
 		this.vel_actual = vel;
-	}
-	
-	public void actualizar() {
-		//this.offscreen = this.x < 0 || this.x > this.entorno.ancho();
 	}
 	
 	public void dibujar(Entorno entorno) {

@@ -132,6 +132,7 @@ public class Juego extends InterfaceJuego
 		// Mover los depredadores
 		if (timer_aparicion_depredadores.getContador() == 0) {
 			spawnear_depredador();
+			System.out.println("spawn");
 			timer_aparicion_depredadores.empezar();
 		}
 		timer_aparicion_depredadores.actualizar();
@@ -143,8 +144,7 @@ public class Juego extends InterfaceJuego
 					//this.reset();
 				}
 								
-				depredadores[i].mover2();
-				depredadores[i].actualizar();
+				depredadores[i].mover();
 				depredadores[i].dibujar(entorno);
 				
 				if (depredadores[i].getY() < nivel_piso) {
@@ -152,7 +152,8 @@ public class Juego extends InterfaceJuego
 				}
 				
 				// Eliminar a los depredadores
-				if (depredadores[i].getX() < 0 || (depredadores[i].getX() > this.entorno.ancho() && depredadores[i].get_vel() < 0)) {
+				if (depredadores[i].getX() < 0 || (depredadores[i].getX() > this.entorno.ancho() && depredadores[i].get_direccion() > 0)) {
+					System.out.println("huyó");
 					depredadores[i] = null;
 				} else {
 					if (piedra != null) {
