@@ -6,20 +6,23 @@ import entorno.InterfaceJuego;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.util.Random;
 
 public class Juego extends InterfaceJuego
 {
-	// El objeto Entorno que controla el tiempo y otros
 	private Entorno entorno;
 	
 	private Mono mono;
 	private Piedra piedra;
 	private Plataforma[] plataformas = new Plataforma[7];
 	private Depredador[] depredadores = new Depredador[8];
-	private Timer timer_aparicion_depredadores = new Timer(200);
+	private Timer timer_aparicion_depredadores = new Timer(120);
+	private Timer timer_lanzamiento_piedra = new Timer(120);
 	private int limite;
 	private int vel_juego = 4;
+	private int gravedad = 1;
 	private int ultimo_y;
+	private boolean mono_colisionando;
 	
 	private int nivel_piso = 464;
 	
@@ -29,7 +32,7 @@ public class Juego extends InterfaceJuego
 	{
 		this.entorno = new Entorno(this, "Monkey Run", 1024, 480);
 		
-		this.mono = new Mono(64, nivel_piso-32, this.entorno);
+		this.mono = new Mono(64, nivel_piso-32);
 		
 		this.plataformas[0] = new Plataforma(this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
 		this.plataformas[1] = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
@@ -45,27 +48,62 @@ public class Juego extends InterfaceJuego
 		this.entorno.iniciar();
 	}
 	
-	private void spawnear_depredador() {
-		for (int i = 0; i < depredadores.length; i++) {
-			if (depredadores[i] == null) {
-				int pos_x = 2000;
-				int pos_y = nivel_piso;
-				for (int x = 1; x < plataformas.length; x++ ) {
-					if (plataformas[x].getX() > entorno.ancho() && plataformas[x].getY() % 9 == 0) {
-						pos_x = plataformas[x].getX();
-						pos_y = plataformas[x].getY();
-						break;
-					}
-				}				
-				depredadores[i] = new Depredador(pos_x, pos_y);
-				break;
-			}
-		}
-	}
-	
 	public void tick()
 	{	
 		entorno.dibujarImagen(Herramientas.cargarImagen("fondo.jpg"), entorno.ancho() / 2, entorno.alto() / 2 , 0);
+		
+		// PLATAFORMAS
+		for (int i = plataformas.length-1; i >= 0; i--) {
+			// MOVER Y DIBUJAR PLATAFORMAS Y ARBOLES
+			if (i > 0) {
+				if (plataformas[i].getX()+plataformas[i].getW() < 0) {
+					plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
+					
+					int nuevo_y = (int)(Math.random() * 48 + 24); 					// Unidades maximas y minimas de movimiento vertical
+					if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Límite de altura para las plataformas
+						nuevo_y = -nuevo_y;
+					} 
+					plataformas[i].setY(plataformas[i].getY() + nuevo_y);
+				}
+				plataformas[i].mover(vel_juego);
+				
+				// Arboles
+				if (i % 2 == 0) {
+					this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
+					this.entorno.dibujarImagen(Herramientas.cargarImagen("arbol.png"), plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
+				}
+			}				
+			plataformas[i].dibujar();
+			
+			// COLISION CON EL MONO
+			if (i >= this.limite) {			
+				if (colision(mono, plataformas[i])) {
+					this.limite = i;
+					mono_colisionando = true;
+
+					// puntaje
+					if (this.mono.getY() < 448) {
+						if (this.mono.getY() != this.ultimo_y) {
+							this.puntaje += 5;
+						}
+						this.ultimo_y = this.mono.getY();
+					}
+				} else {
+					this.limite = 0;
+					mono_colisionando = false;
+				}
+			}			
+		}
+		
+		// MONO
+		if (mono_colisionando) {
+			mono.set_vel(0);
+			if (this.entorno.sePresiono(entorno.TECLA_ARRIBA)) {
+				mono.saltar();
+			}
+		} else {
+			mono.caer(gravedad);
+		}
 		
 		// LANZAR PIEDRAS
 		if (this.piedra == null) {
@@ -81,58 +119,12 @@ public class Juego extends InterfaceJuego
 			}
 		}
 		
-		// Plataformas: movimiento, colision y dibujo
-		for (int i = plataformas.length-1; i >= 0; i--) {
-			// Puntos de interés para calcular colisiones
-			int extremod_plataforma = plataformas[i].getX()+plataformas[i].getW();
-
-			/* Funciona de forma que la plataforma con la que colisionamos siempre sea la ultima del loop, 
-			para que ninguna otra pueda sobreescribir el valor de mono.colision */
-			if (i >= this.limite) {			
-				if (colision(mono, plataformas[i])) {
-					this.limite = i;
-					mono.colision = true;
-					
-					// puntaje
-					if (this.mono.getY() < 448) {
-						if (this.mono.getY() != this.ultimo_y) {
-							this.puntaje += 5;
-						}
-						this.ultimo_y = this.mono.getY();
-					}
-				} else {
-					this.limite = 0;
-					mono.colision = false;
-				}
-			}
-			
-			if (i > 0) {
-				// MOVER PLATAFORMAS
-				if (extremod_plataforma < 0) {
-					plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
-					
-					int nuevo_y = (int)(Math.random() * 48 + 24); 					// Unidades maximas y minimas de movimiento vertical
-					if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Límite de altura para las plataformas
-						nuevo_y = -nuevo_y;
-					} 
-					plataformas[i].setY(plataformas[i].getY() + nuevo_y);
-				}
-				plataformas[i].mover(vel_juego);
-				
-				// DIBUJAR ARBOLES 
-				if (i % 2 == 0) { // Cada uno tiene dos plataformas
-					this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
-					this.entorno.dibujarImagen(Herramientas.cargarImagen("arbol.png"), plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
-				}
-			}	
-			plataformas[i].dibujar();
-		}
-		
-		
 		// Mover los depredadores
 		if (timer_aparicion_depredadores.getContador() == 0) {
 			spawnear_depredador();
 			System.out.println("spawn");
+			timer_aparicion_depredadores.set_tiempo((int)(Math.random() * 120 + 50));
+			System.out.println(timer_aparicion_depredadores.get_tiempo());
 			timer_aparicion_depredadores.empezar();
 		}
 		timer_aparicion_depredadores.actualizar();
@@ -172,8 +164,8 @@ public class Juego extends InterfaceJuego
 			}
 		}
 		
-		mono.actualizar();
-		mono.dibujar();
+		//mono.actualizar();
+		mono.dibujar(entorno);
 	}
 
 	@SuppressWarnings("unused")
@@ -186,14 +178,14 @@ public class Juego extends InterfaceJuego
 		for (int i = 0; i < this.depredadores.length-1; i++) {
 			this.depredadores[i].set_vel(vel_juego);
 		}
-		this.mono.bloquear_control();
+		//this.mono.bloquear_control();
 		vel_juego = 0;
 	}
 	private void resumir() {
 		for (int i = 0; i <= this.depredadores.length-1; i++) {
 			this.depredadores[i].resetear(nivel_piso);
 		}
-		this.mono.habilitar_control();
+		//this.mono.habilitar_control();
 		vel_juego = 4;
 	}
 	private void reset() {
@@ -205,6 +197,24 @@ public class Juego extends InterfaceJuego
 			Thread.currentThread().interrupt();
 		}
 		this.resumir();
+	}
+	
+	private void spawnear_depredador() {
+		for (int i = 0; i < depredadores.length; i++) {
+			if (depredadores[i] == null) {
+				int pos_x = 2000;
+				int pos_y = nivel_piso;
+				for (int x = 1; x < plataformas.length; x++ ) {
+					if (plataformas[x].getX() > entorno.ancho() && plataformas[x].getY() % 9 == 0) {
+						pos_x = plataformas[x].getX();
+						pos_y = plataformas[x].getY();
+						break;
+					}
+				}				
+				depredadores[i] = new Depredador(pos_x, pos_y);
+				break;
+			}
+		}
 	}
 	
 	private boolean colision(Mono mono, Plataforma plataforma) {
