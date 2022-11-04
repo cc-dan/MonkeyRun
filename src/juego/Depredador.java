@@ -55,15 +55,6 @@ public class Depredador {
 		this.reposicionar(1900 + diferencia, y);
 	}
 	
-	public void huir() {
-		if (this.y < 464) {
-			this.reposicionar(1900, 464);
-			return;
-		}
-		
-		this.set_vel(6);
-	}
-	
 	public void dormir() {
 		this.h = this.h / 2;
 	}
@@ -71,7 +62,7 @@ public class Depredador {
 	public void mover() {
 		this.x += this.vel_actual * direccion;
 	}
-	public void huir2() {
+	public void huir() {
 		this.cambiar_direccion();
 		this.set_vel(vel_actual * 2);
 	}

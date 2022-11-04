@@ -18,7 +18,7 @@ public class Juego extends InterfaceJuego
 	private Depredador[] depredadores = new Depredador[8];
 	private Timer timer_aparicion_depredadores = new Timer(120);
 	private Timer timer_lanzamiento_piedra = new Timer(120);
-	private int limite;
+	private int plataforma_actual;
 	private int vel_juego = 4;
 	private int gravedad = 1;
 	private int ultimo_y;
@@ -42,7 +42,7 @@ public class Juego extends InterfaceJuego
 		this.plataformas[5] = new Plataforma(600, this.entorno.alto()-80, 96, 16, this.entorno);
 		this.plataformas[6] = new Plataforma(750, this.entorno.alto()-70, 96, 16, this.entorno);
 		
-		this.limite = 0;		
+		this.plataforma_actual = 0;		
 		this.ultimo_y = this.mono.getY();
 		
 		this.entorno.iniciar();
@@ -54,31 +54,32 @@ public class Juego extends InterfaceJuego
 		
 		// PLATAFORMAS
 		for (int i = plataformas.length-1; i >= 0; i--) {
+			Plataforma plataforma = plataformas[i];
 			// MOVER Y DIBUJAR PLATAFORMAS Y ARBOLES
 			if (i > 0) {
-				if (plataformas[i].getX()+plataformas[i].getW() < 0) {
-					plataformas[i].setX(this.entorno.ancho()+plataformas[i].getW()/2 + 300);
+				if (plataforma.getX()+plataformas[i].getW() < 0) {
+					plataforma.setX(entorno.ancho()+plataforma.getW()/2 + 300);
 					
 					int nuevo_y = (int)(Math.random() * 48 + 24); 					// Unidades maximas y minimas de movimiento vertical
-					if (plataformas[i].getY() + nuevo_y > this.entorno.alto()-32) { // Límite de altura para las plataformas
+					if (plataforma.getY() + nuevo_y > entorno.alto()-32) { // Límite de altura para las plataformas
 						nuevo_y = -nuevo_y;
 					} 
-					plataformas[i].setY(plataformas[i].getY() + nuevo_y);
+					plataforma.setY(plataforma.getY() + nuevo_y);
 				}
-				plataformas[i].mover(vel_juego);
+				plataforma.mover(vel_juego);
 				
 				// Arboles
 				if (i % 2 == 0) {
-					this.entorno.dibujarRectangulo(plataformas[i].getX() - 80, this.entorno.alto() - 100, 8, 200, 0, null);
-					this.entorno.dibujarImagen(Herramientas.cargarImagen("arbol.png"), plataformas[i].getX() - 80, this.entorno.alto() - 161, 0);
+					entorno.dibujarRectangulo(plataforma.getX() - 80, entorno.alto() - 100, 8, 200, 0, null);
+					entorno.dibujarImagen(Herramientas.cargarImagen("arbol.png"), plataforma.getX() - 80, entorno.alto() - 161, 0);
 				}
 			}				
-			plataformas[i].dibujar();
+			plataforma.dibujar();
 			
 			// COLISION CON EL MONO
-			if (i >= this.limite) {			
-				if (colision(mono, plataformas[i])) {
-					this.limite = i;
+			if (i >= this.plataforma_actual) {			
+				if (colision(mono, plataforma)) {
+					this.plataforma_actual = i;
 					mono_colisionando = true;
 
 					// puntaje
@@ -89,7 +90,7 @@ public class Juego extends InterfaceJuego
 						this.ultimo_y = this.mono.getY();
 					}
 				} else {
-					this.limite = 0;
+					this.plataforma_actual = 0;
 					mono_colisionando = false;
 				}
 			}			
@@ -98,74 +99,76 @@ public class Juego extends InterfaceJuego
 		// MONO
 		if (mono_colisionando) {
 			mono.set_vel(0);
-			if (this.entorno.sePresiono(entorno.TECLA_ARRIBA)) {
+			if (entorno.sePresiono(entorno.TECLA_ARRIBA)) {
 				mono.saltar();
 			}
 		} else {
 			mono.caer(gravedad);
 		}
+		mono.dibujar(entorno);
 		
 		// LANZAR PIEDRAS
-		if (this.piedra == null) {
-			if (this.entorno.sePresiono(entorno.TECLA_ALT)) {
-				this.piedra = mono.lanzar_piedra();
+		if (piedra == null) {
+			if (timer_lanzamiento_piedra.get_contador() == 0) {
+				if (entorno.sePresiono(entorno.TECLA_ALT)) {
+					piedra = mono.lanzar_piedra();
+					timer_lanzamiento_piedra.empezar();
+				}
 			}
 		} else {
-			this.piedra.actualizar();
-			this.piedra.dibujar(entorno);
+			piedra.actualizar();
+			piedra.dibujar(entorno);
 			
-			if (this.piedra.getX() > this.entorno.ancho()) {
-				this.piedra = null;
+			if (piedra.getX() > entorno.ancho()) {
+				piedra = null;
 			}
 		}
+		timer_lanzamiento_piedra.actualizar();
 		
-		// Mover los depredadores
-		if (timer_aparicion_depredadores.getContador() == 0) {
-			spawnear_depredador();
-			System.out.println("spawn");
+		// SPAWNEAR DEPREDADORES
+		if (timer_aparicion_depredadores.get_contador() == 0) {
+			spawnear_depredador();			
 			timer_aparicion_depredadores.set_tiempo((int)(Math.random() * 120 + 50));
-			System.out.println(timer_aparicion_depredadores.get_tiempo());
 			timer_aparicion_depredadores.empezar();
 		}
 		timer_aparicion_depredadores.actualizar();
 		
-		for (int i = depredadores.length-1; i >= 0; i--) {			
-			if (depredadores[i] != null) {
-				if(colision(mono, depredadores[i])) {
-					System.out.println("******");
-					//this.reset();
-				}
-								
-				depredadores[i].mover();
-				depredadores[i].dibujar(entorno);
+		// DEPREDADORES
+		for (int i = 0; i < depredadores.length; i++) {
+			Depredador depredador = depredadores[i];
+			if (depredador != null) {											
+				depredador.mover();
+				depredador.dibujar(entorno);
 				
-				if (depredadores[i].getY() < nivel_piso) {
-					depredadores[i].set_vel(vel_juego);
+				// Si están en una plataforma se mueven a la misma velocidad
+				if (depredador.getY() < nivel_piso) {
+					depredador.set_vel(vel_juego);
 				}
 				
-				// Eliminar a los depredadores
-				if (depredadores[i].getX() < 0 || (depredadores[i].getX() > this.entorno.ancho() && depredadores[i].get_direccion() > 0)) {
-					System.out.println("huyó");
+				// Game over
+				if(colision(mono, depredador)) {
+					this.reset();
+				}
+				
+				// Eliminar a los depredadores cuando salen de la pantalla o les pega una piedra
+				if (depredador.getX() < 0 || (depredador.getX() > entorno.ancho() && depredador.get_direccion() > 0)) {
 					depredadores[i] = null;
 				} else {
 					if (piedra != null) {
-						if (colision(depredadores[i], piedra) ) {
+						if (colision(depredador, piedra) ) {
 							this.piedra = null;
 							
 							// Serpientes mueren, leones huyen
-							if (depredadores[i].getY() < 448) {
+							if (depredador.getY() < nivel_piso) {
 								depredadores[i] = null;
 							} else {						
-								depredadores[i].huir2();
+								depredador.huir();
 							}
 						}
 					}
 				}
 			}
 		}
-		
-		//mono.actualizar();
-		mono.dibujar(entorno);
 	}
 
 	@SuppressWarnings("unused")
@@ -173,30 +176,21 @@ public class Juego extends InterfaceJuego
 	{
 		Juego juego = new Juego();
 	}
-	
-	private void pausar() {
-		for (int i = 0; i < this.depredadores.length-1; i++) {
-			this.depredadores[i].set_vel(vel_juego);
-		}
-		//this.mono.bloquear_control();
-		vel_juego = 0;
-	}
-	private void resumir() {
-		for (int i = 0; i <= this.depredadores.length-1; i++) {
-			this.depredadores[i].resetear(nivel_piso);
-		}
-		//this.mono.habilitar_control();
-		vel_juego = 4;
-	}
+
 	private void reset() {
-		this.pausar();
 		try {
 			Thread.sleep(2000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			Thread.currentThread().interrupt();
 		}
-		this.resumir();
+		// Limpiar depredadores
+		for (int i = 0; i < depredadores.length; i++) {
+			depredadores[i] = null;
+		}
+		// Rotar plataformas
+		for (int i = 1; i < plataformas.length; i++) {
+			plataformas[i].setX(plataformas[i].getX() + entorno.ancho());
+		}
 	}
 	
 	private void spawnear_depredador() {

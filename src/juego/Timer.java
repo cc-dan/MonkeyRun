@@ -9,7 +9,7 @@ public class Timer {
 		this.contador = 0;
 	}
 	
-	public int getContador() {
+	public int get_contador() {
 		return this.contador;
 	}
 	
