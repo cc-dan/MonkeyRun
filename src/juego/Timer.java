@@ -11,12 +11,10 @@ public class Timer {
 	
 	public int get_contador() {
 		return this.contador;
-	}
-	
+	}	
 	public int get_tiempo() {
 		return this.tiempo;
-	}
-	
+	}	
 	public void set_tiempo(int tiempo) {
 		this.tiempo = tiempo;
 	}

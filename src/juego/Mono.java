@@ -32,6 +32,9 @@ public class Mono {
 	public int getH() {
 		return this.h;
 	}
+	public void set_y(int y) {
+		this.y = y;
+	}
 	public int get_vel() {
 		return this.vel_vertical;	
 	}

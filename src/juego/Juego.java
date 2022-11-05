@@ -3,36 +3,41 @@ package juego;
 import entorno.Entorno;
 import entorno.Herramientas;
 import entorno.InterfaceJuego;
-
-import java.awt.Color;
 import java.awt.Image;
-import java.util.Random;
 
 public class Juego extends InterfaceJuego
 {
 	private Entorno entorno;
 	
+	// Instancias del juego
 	private Mono mono;
 	private Piedra piedra;
-	private Plataforma[] plataformas = new Plataforma[7];
-	private Depredador[] depredadores = new Depredador[8];
-	private Timer timer_aparicion_depredadores = new Timer(120);
-	private Timer timer_lanzamiento_piedra = new Timer(120);
-	private int plataforma_actual;
-	private int vel_juego = 4;
-	private int gravedad = 1;
-	private int ultimo_y;
+	private Plataforma[] plataformas 			= new Plataforma[7];
+	private Depredador[] depredadores 			= new Depredador[8];
+	private Timer timer_aparicion_depredadores 	= new Timer(120);
+	private Timer timer_lanzamiento_piedra 		= new Timer(120);
+	
+	// Lógica del entorno
 	private boolean mono_colisionando;
+	private int plataforma_actual 	= 0;
+	private int vel_juego 			= 4;
+	private int gravedad 			= 1;
+	private int nivel_piso 			= 464;
 	
-	private int nivel_piso = 464;
-	
+	// Puntaje
 	private int puntaje = 0;
+	private int ultimo_y;
+	
+	// Gráficos
+	private Image fondo = Herramientas.cargarImagen("fondo.jpg");
+	private Image arbol = Herramientas.cargarImagen("arbol.png");
 	
 	Juego()
 	{
-		this.entorno = new Entorno(this, "Monkey Run", 1024, 480);
+		this.entorno 	= new Entorno(this, "Monkey Run", 1024, 480);
 		
-		this.mono = new Mono(64, nivel_piso-32);
+		this.mono 		= new Mono(64, nivel_piso-32);
+		this.ultimo_y 	= this.mono.getY();
 		
 		this.plataformas[0] = new Plataforma(this.entorno.ancho()/2, this.entorno.alto()+8, this.entorno.ancho(), 16, this.entorno);
 		this.plataformas[1] = new Plataforma(0, this.entorno.alto()-64, 96, 16, this.entorno);
@@ -42,26 +47,23 @@ public class Juego extends InterfaceJuego
 		this.plataformas[5] = new Plataforma(600, this.entorno.alto()-80, 96, 16, this.entorno);
 		this.plataformas[6] = new Plataforma(750, this.entorno.alto()-70, 96, 16, this.entorno);
 		
-		this.plataforma_actual = 0;		
-		this.ultimo_y = this.mono.getY();
-		
 		this.entorno.iniciar();
 	}
 	
 	public void tick()
 	{	
-		entorno.dibujarImagen(Herramientas.cargarImagen("fondo.jpg"), entorno.ancho() / 2, entorno.alto() / 2 , 0);
+		entorno.dibujarImagen(fondo, entorno.ancho() / 2, entorno.alto() / 2 , 0);
 		
 		// PLATAFORMAS
 		for (int i = plataformas.length-1; i >= 0; i--) {
 			Plataforma plataforma = plataformas[i];
-			// MOVER Y DIBUJAR PLATAFORMAS Y ARBOLES
+			// MOVER Y DIBUJAR ARBOLES
 			if (i > 0) {
-				if (plataforma.getX()+plataformas[i].getW() < 0) {
+				if (plataforma.getX()+plataforma.getW() < 0) {
 					plataforma.setX(entorno.ancho()+plataforma.getW()/2 + 300);
 					
-					int nuevo_y = (int)(Math.random() * 48 + 24); 					// Unidades maximas y minimas de movimiento vertical
-					if (plataforma.getY() + nuevo_y > entorno.alto()-32) { // Límite de altura para las plataformas
+					int nuevo_y = (int)(Math.random() * 48 + 24); 			// Unidades maximas y minimas de movimiento vertical
+					if (plataforma.getY() + nuevo_y > entorno.alto()-32) { 	// Límite de altura para las plataformas
 						nuevo_y = -nuevo_y;
 					} 
 					plataforma.setY(plataforma.getY() + nuevo_y);
@@ -70,8 +72,7 @@ public class Juego extends InterfaceJuego
 				
 				// Arboles
 				if (i % 2 == 0) {
-					entorno.dibujarRectangulo(plataforma.getX() - 80, entorno.alto() - 100, 8, 200, 0, null);
-					entorno.dibujarImagen(Herramientas.cargarImagen("arbol.png"), plataforma.getX() - 80, entorno.alto() - 161, 0);
+					entorno.dibujarImagen(arbol, plataforma.getX() - 80, entorno.alto() - 161, 0);
 				}
 			}				
 			plataforma.dibujar();
@@ -116,7 +117,7 @@ public class Juego extends InterfaceJuego
 				}
 			}
 		} else {
-			piedra.actualizar();
+			piedra.mover();
 			piedra.dibujar(entorno);
 			
 			if (piedra.getX() > entorno.ancho()) {
@@ -191,20 +192,27 @@ public class Juego extends InterfaceJuego
 		for (int i = 1; i < plataformas.length; i++) {
 			plataformas[i].setX(plataformas[i].getX() + entorno.ancho());
 		}
+		// Reposicionar mono
+		mono.set_y(nivel_piso-32);
 	}
 	
 	private void spawnear_depredador() {
 		for (int i = 0; i < depredadores.length; i++) {
-			if (depredadores[i] == null) {
+			Depredador depredador = depredadores[i];
+			// Agregamos depredadores en los espacios vacios del array
+			if (depredador == null) {
+				// Definimos posiciones donde va a aparecer
 				int pos_x = 2000;
 				int pos_y = nivel_piso;
+				// Decidimos si aparece en una plataforma o no
 				for (int x = 1; x < plataformas.length; x++ ) {
-					if (plataformas[x].getX() > entorno.ancho() && plataformas[x].getY() % 9 == 0) {
-						pos_x = plataformas[x].getX();
-						pos_y = plataformas[x].getY();
+					Plataforma plataforma = plataformas[x];
+					if (plataforma.getX() > entorno.ancho() && plataforma.getY() % 9 == 0) {
+						pos_x = plataforma.getX();
+						pos_y = plataforma.getY() - 16;
 						break;
 					}
-				}				
+				}
 				depredadores[i] = new Depredador(pos_x, pos_y);
 				break;
 			}

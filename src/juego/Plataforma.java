@@ -9,7 +9,7 @@ import entorno.Herramientas;
 public class Plataforma {
 	private int x, y, w, h;
 	private Entorno entorno;
-	private Image imagen;
+	private Image imagen = Herramientas.cargarImagen("rama.png");
 	private Color color;
 	
 	public Plataforma(int x, int y, int w, int h, Entorno entorno) {
@@ -18,9 +18,6 @@ public class Plataforma {
 		this.x = x;
 		this.y = y;
 		this.entorno = entorno;
-		
-		this.imagen = Herramientas.cargarImagen("rama.png");
-		this.color = new Color(205,133,63);
 	}
 	
 	public int getX() {
